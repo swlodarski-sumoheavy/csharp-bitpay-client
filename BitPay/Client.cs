@@ -34,12 +34,13 @@ namespace BitPay
         ///     Create Client class for POS.
         /// </summary>
         /// <param name="token">Pos token VO.</param>
-        public Client(PosToken token)
+        /// <param name="platformInfo">Platform info.</param>
+        public Client(PosToken token, string? platformInfo = null)
         {
             if (token == null) throw new ArgumentNullException(nameof(token));
             
             _accessTokens = GetAccessTokens(token);
-            _bitPayClient = GetDefaultBitPayClient(Environment.Prod);
+            _bitPayClient = GetDefaultBitPayClient(Environment.Prod, platformInfo);
         }
 
         /// <summary>
@@ -47,13 +48,14 @@ namespace BitPay
         /// </summary>
         /// <param name="token">Pos token VO.</param>
         /// <param name="environment">Environment</param>
-        public Client(PosToken token, Environment environment)
+        /// <param name="platformInfo">Platform info.</param>
+        public Client(PosToken token, Environment environment, string? platformInfo = null)
         {
             if (token == null) 
                 throw new ArgumentNullException(nameof(token));
 
             _accessTokens = GetAccessTokens(token);
-            _bitPayClient = GetDefaultBitPayClient(environment);
+            _bitPayClient = GetDefaultBitPayClient(environment, platformInfo);
         }
 
         /// <summary>
@@ -62,7 +64,8 @@ namespace BitPay
         /// <param name="environment">Environment</param>
         /// <param name="privateKey"></param>
         /// <param name="accessTokens"></param>
-        public Client(PrivateKey privateKey, AccessTokens accessTokens, Environment environment = Environment.Prod)
+        /// <param name="platformInfo">Platform info.</param>
+        public Client(PrivateKey privateKey, AccessTokens accessTokens, Environment environment = Environment.Prod, string? platformInfo = null)
         {
             if (privateKey == null)
             {
@@ -79,7 +82,7 @@ namespace BitPay
             var httpClient = GetHttpClient(baseUrl);
 
             _accessTokens = accessTokens;
-            _bitPayClient = new BitPayClient(httpClient, baseUrl, ecKey);
+            _bitPayClient = new BitPayClient(httpClient, baseUrl, ecKey, platformInfo);
             CreateIdentity(ecKey);
         }
 
@@ -88,7 +91,8 @@ namespace BitPay
         /// </summary>
         /// <param name="configFilePath">Config File Path</param>
         /// <param name="environment">Environment</param>
-        public Client(ConfigFilePath configFilePath, Environment environment = Environment.Prod)
+        /// <param name="platformInfo">Platform info.</param>
+        public Client(ConfigFilePath configFilePath, Environment environment = Environment.Prod, string? platformInfo = null)
         {
             if (configFilePath == null)
             {
@@ -102,7 +106,7 @@ namespace BitPay
             var baseUrl = GetBaseUrl(environment);
             var httpClient = GetHttpClient(baseUrl);
 
-            _bitPayClient = new BitPayClient(httpClient, baseUrl, ecKey);
+            _bitPayClient = new BitPayClient(httpClient, baseUrl, ecKey, platformInfo);
             CreateIdentity(ecKey);
         }
 
@@ -948,11 +952,11 @@ namespace BitPay
             return accessTokens;
         }
 
-        private IBitPayClient GetDefaultBitPayClient(Environment environment)
+        private IBitPayClient GetDefaultBitPayClient(Environment environment, string? platformInfo)
         {
             var baseUrl = GetBaseUrl(environment);
             var httpClient = GetHttpClient(baseUrl);
-            return new BitPayClient(httpClient, baseUrl, null);
+            return new BitPayClient(httpClient, baseUrl, null, platformInfo);
         }
 
         private static HttpClient GetHttpClient(string baseUrl)
