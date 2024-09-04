@@ -49,6 +49,17 @@ namespace BitPayUnitTest
         }
 
         [Fact]
+        public void it_should_provide_pos_client_with_platform_info_header()
+        {
+            string posToken = "posToken";
+
+            var client = new Client(new PosToken(posToken), "MyPlatform_v1.0.0");
+
+            Assert.IsType<Client>(client);
+            Assert.Equal(posToken, client.GetAccessToken("pos"));
+        }
+
+        [Fact]
         public void it_should_provide_client_by_key()
         {
             // given
@@ -66,6 +77,23 @@ namespace BitPayUnitTest
         }
 
         [Fact]
+        public void it_should_provide_client_by_key_with_platform_info_header()
+        {
+            // given
+            String privateKey =
+                "75371435315047800683080420474719166774492308988314944856528163960396135344086";
+            String merchantToken = "merchantToken";
+            AccessTokens tokens = new AccessTokens();
+            tokens.AddMerchant(merchantToken);
+
+            // when
+            Client client = new Client(new PrivateKey(privateKey), tokens, Environment.Test, "MyPlatform_v1.0.0");
+
+            // then
+            Assert.Equal(merchantToken, client.GetAccessToken(Facade.Merchant));
+        }
+
+        [Fact]
         public void it_should_provide_client_by_config_file()
         {
             // given
@@ -73,6 +101,21 @@ namespace BitPayUnitTest
 
             // when
             Client bitpay = new Client(new ConfigFilePath(path), Environment.Test);
+
+            // then
+            Assert.Equal("merchantToken", bitpay.GetAccessToken(Facade.Merchant));
+            Assert.Equal("payoutToken", bitpay.GetAccessToken(Facade.Payout));
+        }
+
+
+        [Fact]
+        public void it_should_provide_client_by_config_file_with_platform_info_header()
+        {
+            // given
+            string path = GetBitPayUnitTestPath() + Path.DirectorySeparatorChar + "BitPay.config.json";
+
+            // when
+            Client bitpay = new Client(new ConfigFilePath(path), Environment.Test, "MyPlatform_v1.0.0");
 
             // then
             Assert.Equal("merchantToken", bitpay.GetAccessToken(Facade.Merchant));
